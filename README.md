@@ -155,7 +155,7 @@ any scriptable language if you don't want to create an external one explicitly.
 
 Each entry in the step section is defined like this:
 
-    <directive> = <data>
+    step = <directive> = <data>
 
 Each directive is executed sequentially. The available directives are described
 in the following table.
@@ -167,11 +167,11 @@ in the following table.
 | exec CMD                | Execute a command with optional arguments, stop if it fails. |
 | exec-no-exit CMD        | Execute a command with optional arguments, do not stop if it fails. |
 | info MSG                | Print a message to the log. |
-| must-exist-dir DIR      | Fail if directory DIR does not exist.<br>This is shortand for<br>`exec /bin/bash -c "[ -d DIR ] && exit 0 || exit 1"` |
-| must-exist-file FILE    | Fail if file FILE does not exist.<br>This is shortand for<br>`exec /bin/bash -c "[ -f FILE ] && exit 0 || exit 1"` |
-| must-not-exist-dir DIR  | Fail if directory DIR exists.<br>This is shortand for<br>`exec /bin/bash -c "[ ! -d DIR ] && exit 0 || exit 1"` |
-| must-not-exist-file FILE| Fail if file FILE exists.<br>This is shortand for<br>`exec /bin/bash -c "[ ! -f FILE ] && exit 0 || exit 1"` |
-| script """ ... """      | Embed an anonymous, in-line script. You can use any scripting language. |
+| must-exist-dir DIR      | Fail if directory DIR does not exist.<br>This is shortand for<br>`step = exec /bin/bash -c "[ -d DIR ] && exit 0 || exit 1"` |
+| must-exist-file FILE    | Fail if file FILE does not exist.<br>This is shortand for<br>`step = exec /bin/bash -c "[ -f FILE ] && exit 0 || exit 1"` |
+| must-not-exist-dir DIR  | Fail if directory DIR exists.<br>This is shortand for<br>`step =exec /bin/bash -c "[ ! -d DIR ] && exit 0 || exit 1"` |
+| must-not-exist-file FILE| Fail if file FILE exists.<br>This is shortand for<br>`step = exec /bin/bash -c "[ ! -f FILE ] && exit 0 || exit 1"` |
+| script `""" ... """`      | Embed an anonymous, in-line script. You can use any scripting language. |
 
 ### 4.4 Example Recipe
 Here is a full example of a recipe.
