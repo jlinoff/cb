@@ -53,7 +53,7 @@ the variables and the steps. These sections are described in detail in
 the next section.
 
 ### 3. Installing
-This is a go program. It has been tested with 1.6.3.
+This is a go program. It has been tested with 1.6.3 on Mac OS X 10.11.6 and linux CentOS 7.2.
 
 Here is how you would download and install it assuming the go 1.6.3 or later is in your path.
 
