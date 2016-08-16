@@ -208,7 +208,6 @@ func GetExePath(f string) (a string, e error) {
 
 	// LookPath failed, get the value for ~ and look in $PATH.
 	// This will not work on windows.
-
 	switch runtime.GOOS {
 	case "darwin", "linux":
 		h := os.Getenv("HOME")
