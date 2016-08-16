@@ -19,7 +19,7 @@ Sounds a lot like scripts, right? Why not just create scripts to wrap the
 complex commands. _You can and should_ use scripts to wrap complex functions.
 Scripts are great.
 
-However, when there is a profileration of many scripts for class of tasks
+However, when there is a profileration of many scripts for a class of tasks
 (like building SW), it is sometimes difficult to find the one that you want.
 
 That is where recipes come in. They are not meant to replace scripts or
