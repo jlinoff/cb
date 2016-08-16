@@ -24,16 +24,15 @@ type CliOptions struct {
 	HelpArg     string
 	Tee         bool
 	Quiet       bool
-	RecipesDir  string
 	ShellScript string
 	Recipe      string
+	RecipeDir   string
 	ExtraArgs   []string
 }
 
 // NewCliOptions gets the command line options and figures out the
 // action to take.
 func NewCliOptions() (opts CliOptions) {
-	opts.RecipesDir = GetDefaultRecipesDir()
 	for i := 1; i < len(os.Args); i++ {
 		arg := os.Args[i]
 		switch arg {
@@ -57,7 +56,7 @@ func NewCliOptions() (opts CliOptions) {
 			if IsDir(d) == false {
 				Log.Err("not a valid directory: %v", d)
 			}
-			opts.RecipesDir = d
+			opts.RecipeDir = d
 		case "--run":
 			if opts.Action == actionUnknown {
 				opts.Action = actionRun // do not override other actions

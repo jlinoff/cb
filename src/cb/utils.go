@@ -83,14 +83,6 @@ func Chdir(path string) {
 	Log.InfoWithLevel(3, "pwd = %v", wd)
 }
 
-// GetDefaultRecipesDir gets the the default recipes directory.
-func GetDefaultRecipesDir() (dir string) {
-	a0, _ := filepath.Abs(os.Args[0])
-	b := filepath.Base(a0)
-	dir = path.Join(filepath.Dir(a0), "../etc", b, "recipes")
-	return
-}
-
 // RepoProject contains the information for a repo project.
 type RepoProject struct {
 	name    string
@@ -229,7 +221,7 @@ func GetExePath(f string) (a string, e error) {
 			if _, err := os.Stat(fp); os.IsNotExist(err) {
 				continue
 			}
-			a = fp
+			a, _ = filepath.Abs(fp)
 			return
 		}
 		e = fmt.Errorf("can't find %v in path: %v", f, p)

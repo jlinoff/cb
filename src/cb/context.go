@@ -48,7 +48,7 @@ func MakeContext(tee string) {
 	ts := time.Now().Truncate(time.Millisecond).Format("20060102-150505")
 	ep, err := GetExePath(os.Args[0])
 	if err != nil {
-		Log.Err("internal error - %v", err)
+		Log.Err("internal error - can't find path for %v - %v", os.Args[0], err)
 	}
 	b := filepath.Base(ep)
 	rp := path.Join(filepath.Dir(ep), "../etc", b, "recipes")

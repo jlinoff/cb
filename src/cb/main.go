@@ -45,8 +45,8 @@ func main() {
 
 	// Display the run-time context.
 	MakeContext(tee)
-	if opts.RecipesDir != "" {
-		Context.RecipeDir = opts.RecipesDir
+	if opts.RecipeDir != "" {
+		Context.RecipeDir = opts.RecipeDir
 	}
 	Context.PrintContext()
 
