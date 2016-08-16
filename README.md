@@ -194,7 +194,7 @@ Here is a full example of a recipe.
     dir = /tmp
 
     [step]
-    must-exit-dir ${dir}
+    must-exist-dir ${dir}
 
     step = ls -l ${dir}
 
