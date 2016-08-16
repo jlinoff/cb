@@ -169,7 +169,7 @@ in the following table.
 | info MSG                | Print a message to the log. |
 | must-exist-dir DIR      | Fail if directory DIR does not exist.<br>This is shortand for<br>`step = exec /bin/bash -c "[ -d DIR ] && exit 0 || exit 1"` |
 | must-exist-file FILE    | Fail if file FILE does not exist.<br>This is shortand for<br>`step = exec /bin/bash -c "[ -f FILE ] && exit 0 || exit 1"` |
-| must-not-exist-dir DIR  | Fail if directory DIR exists.<br>This is shortand for<br>`step =exec /bin/bash -c "[ ! -d DIR ] && exit 0 || exit 1"` |
+| must-not-exist-dir DIR  | Fail if directory DIR exists.<br>This is shortand for<br>`step = exec /bin/bash -c "[ ! -d DIR ] && exit 0 || exit 1"` |
 | must-not-exist-file FILE| Fail if file FILE exists.<br>This is shortand for<br>`step = exec /bin/bash -c "[ ! -f FILE ] && exit 0 || exit 1"` |
 | script `""" ... """`      | Embed an anonymous, in-line script. You can use any scripting language. |
 
