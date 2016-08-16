@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/user"
 	"path"
 	"strconv"
 	"strings"
@@ -31,7 +32,8 @@ func main() {
 	if opts.Tee {
 		t := time.Now().Truncate(time.Millisecond).Format("20060102-150505")
 		b := path.Base(os.Args[0])
-		tee = fmt.Sprintf("%v-%v-%v.log", b, Context.UserName, t)
+		u, _ := user.Current()
+		tee = fmt.Sprintf("%v-%v-%v.log", b, t, u.Username)
 		Log.Info("tee file : %v", tee)
 		fp, err := os.Create(tee)
 		if err != nil {
