@@ -188,7 +188,7 @@ RECIPES
         dir = /tmp
 
         [step]
-        step = must-exit-dir ${dir}
+        step = must-exist-dir ${dir}
 
         step = ls -l ${dir}
 
