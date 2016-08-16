@@ -167,7 +167,8 @@ RECIPES
                                     You can use any scripting language.
                                     They are generated dynamically in %[3]v.
 
-    Here is an example recipe. It is named list-files.ini.
+    Here is an example recipe. It is named list-files.ini so you can refer to it
+    as "list-files" on the command line.
 
         # This is an example recipe.
         [description]
@@ -240,7 +241,7 @@ OPTIONS
 
     -t, --tee          Log all messages to a unique log file as well as stdout.
                        It saves having to create a unique file name for each run
-                       with the built in tee tool.
+                       using the command line tee tool.
 
                        The output file name is
                            %[1]v-<YYYYMMDD>-<hhmmss>-<username>.log
