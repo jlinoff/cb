@@ -144,6 +144,10 @@ Here are some examples of variable declarations to make this clearer.
     option = default
     foo = bar
     spam = "spam is a ${foo}"
+    multiline-var = """
+    line 1
+    line 2
+    """
 
 ### 4.3 [step]
 The step section defines the steps taken. It is very simple and does not
@@ -196,8 +200,15 @@ Here is a full example of a recipe.
     [step]
     must-exist-dir ${dir}
 
+    step = info "the ls command"
     step = ls -l ${dir}
 
+    step = info """
+    # ================================================================
+    # run bash and python scripts
+    # ================================================================
+    """
+    
     step = script """#!/bin/bash
     echo "bash script - ${dir}"
     """
