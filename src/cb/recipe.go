@@ -149,10 +149,10 @@ func runRecipe(opts CliOptions) {
 
 	// Execute the steps.
 	for i, step := range recipe.Steps {
-		if step.Directive != stepScript {
-			Log.Info("step %v - %v %v", i+1, step.DirectiveString, step.Data)
+		if strings.Contains(step.Data, "\n") {
+			Log.Info("step %v - %v %v", i+1, step.DirectiveString, "multi-line")
 		} else {
-			Log.Info("step %v - %v %v", i+1, step.DirectiveString, "anonymous")
+			Log.Info("step %v - %v %v", i+1, step.DirectiveString, step.Data)
 		}
 		switch step.Directive {
 		case stepCd:
@@ -170,7 +170,9 @@ func runRecipe(opts CliOptions) {
 				Log.Err("failed to set the environment variable '%v' - %v", key, err)
 			}
 		case stepInfo:
-			Log.Info("%v", step.Data)
+			// Can't use Log.Info() here because the output will be lost if
+			// --quiet is specified.
+			Log.Printf("%v\n", step.Data)
 		case stepMustExistDir:
 			if IsDir(step.Data) == false {
 				Log.Err("directory does not exist: %v", step.Data)
@@ -200,7 +202,6 @@ func runRecipe(opts CliOptions) {
 			fmt.Fprintf(fp, "%v", step.Data)
 			fp.Close()
 			os.Chmod(fn, 0700)
-			//cmd := fmt.Sprintf("/bin/bash -c %v", fn)
 			cmd := fn
 			RunCmd(cmd)
 			Log.Info("deleting anonymous script file: %v", fn)
@@ -364,6 +365,7 @@ func readRecipeFile(fname string, nested map[string]int) (lines []LineInfo) {
 			re2 := regexp.MustCompile(`"""$`)
 			re3 := regexp.MustCompile(`^(\S+\s*=)\s*"""(.+)"""\s*$`)
 			re4 := regexp.MustCompile(`^\S+\s*=\s*script\s+"""\s*(.*)$`)
+			re5 := regexp.MustCompile(`^\S+\s*=\s*info\s+"""\s*(.*)$`)
 			if re3.MatchString(x) {
 				// It is all on a single line.
 				// Example:
@@ -389,8 +391,9 @@ func readRecipeFile(fname string, nested map[string]int) (lines []LineInfo) {
 				if f == false {
 					Log.Err("syntax error: end of multiline string not found, starts at line %v in %v", lineno, fi.abspath)
 				}
-			} else if re4.MatchString(x) {
+			} else if re4.MatchString(x) || re5.MatchString(x) {
 				// Now parse until the end of the string.
+				// Only for script and info.
 				f := false
 				for ; s.Scan(); lineno++ {
 					sline := s.Text()
@@ -515,7 +518,9 @@ func makeRecipe(recipeFile string, lines []LineInfo) (rec RecipeInfo) {
 // This can be tricky for multiline strings for full and scripts.
 func getRecipeAssignmentValue(li LineInfo) (key string, value string) {
 	line := li.line
-	re := regexp.MustCompile(`(?s)^\s*script\s+"""(.*)+"""$`)
+	re1 := regexp.MustCompile(`(?s)^\s*script\s+"""(.*)+"""$`)
+	re2 := regexp.MustCompile(`(?s)^\s*info\s+"""(.*)+"""$`)
+	re3 := regexp.MustCompile(`(?s)^\s*info\s+"`)
 
 	// Get the key/value pairs.
 	tokens := strings.SplitN(line, "=", 2)
@@ -534,14 +539,33 @@ func getRecipeAssignmentValue(li LineInfo) (key string, value string) {
 		if e != nil {
 			Log.Err("internal error, unquote operation failed at line %v in %v", li.lineno, li.fi.abspath)
 		}
-	} else if re.MatchString(value) {
+	} else if re1.MatchString(value) {
 		// Handle lines of the form:
 		//   step = script """#!/bin/bash
 		//   """
-		m := re.FindAllStringSubmatch(value, -1)
+		m := re1.FindAllStringSubmatch(value, -1)
 		if len(m) > 0 {
 			value = "script " + strings.TrimSpace(m[0][1])
 		}
+	} else if re2.MatchString(value) {
+		// Handle lines of the form:
+		//   step = info """
+		//   stuff
+		//   """
+		m := re2.FindAllStringSubmatch(value, -1)
+		if len(m) > 0 {
+			value = "info " + strings.TrimSpace(m[0][1])
+		}
+	} else if re3.MatchString(value) {
+		// Handle lines of the form:
+		//   step = info "this is a test"  --> this is a test
+		p := strings.Index(value, `"`)
+		s := value[p:]
+		u, e := strconv.Unquote(s)
+		if e != nil {
+			Log.Err("internal error, unquote operation failed at line %v in %v", li.lineno, li.fi.abspath)
+		}
+		value = "info " + u
 	}
 	return
 }

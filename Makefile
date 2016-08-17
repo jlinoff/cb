@@ -48,6 +48,7 @@ test: bin/cb
 	bin/cb -q help list-files
 	bin/cb -q --list
 	bin/cb list-files
+	bin/cb -q test-info
 	bin/cb test-script
 
 edit: src/github.com/golang/lint/README.md
