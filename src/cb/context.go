@@ -17,7 +17,6 @@ import (
 type ContextInfoStruct struct {
 	Base          string
 	Cmd           string
-	Dir           string
 	ExePath       string
 	HostName      string
 	MakeBuildDate string
@@ -25,6 +24,7 @@ type ContextInfoStruct struct {
 	NumCpus       int
 	OsType        string
 	OsVersion     string
+	Pwd           string
 	RecipeDir     string
 	ScriptDir     string
 	Tee           string
@@ -71,12 +71,12 @@ func MakeContext(tee string) {
 
 	Context.Base = base
 	Context.Cmd = MakeCmdString(os.Args)
-	Context.Dir = d
 	Context.ExePath = ep
 	Context.HostName = h
 	Context.NumCpus = runtime.NumCPU()
 	Context.OsType = runtime.GOOS
 	Context.OsVersion = osver
+	Context.Pwd = d
 	Context.RecipeDir = rp
 	Context.ScriptDir = sd
 	Context.Tee = tee
@@ -97,13 +97,13 @@ func (info ContextInfoStruct) PrintContext() {
 	Log.Info("context")
 	Log.Info("   base     : %v", info.Base)
 	Log.Info("   cmd      : %v", info.Cmd)
-	Log.Info("   directory: %v", info.Dir)
 	Log.Info("   exe      : %v", info.ExePath)
 	Log.Info("   gid      : %v", info.UserGID)
 	Log.Info("   numcpus  : %v", info.NumCpus)
 	Log.Info("   os       : %v", info.OsType)
 	Log.Info("   osver    : %v", info.OsVersion)
 	Log.Info("   pid      : %v", info.UserPID)
+	Log.Info("   pwd      : %v", info.Pwd)
 	Log.Info("   recipes  : %v", info.RecipeDir)
 	Log.Info("   scripts  : %v", info.ScriptDir)
 	if info.Tee != "" {

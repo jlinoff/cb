@@ -61,6 +61,7 @@ func main() {
 	setenv("base", Context.Base)
 	setenv("builddate", Context.MakeBuildDate)
 	setenv("pid", strconv.Itoa(Context.UserPID))
+	setenv("pwd", Context.Pwd)
 	setenv("recipes", Context.RecipeDir)
 	setenv("scripts", Context.ScriptDir)
 	setenv("timestamp", Context.TimeStamp)
