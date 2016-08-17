@@ -190,7 +190,14 @@ RECIPES
         [step]
         step = must-exist-dir ${dir}
 
+        step = info "ls command"
         step = ls -l ${dir}
+
+        step = info """
+        # ================================================================
+        # run anonymous bash and python scripts
+        # ================================================================
+        """
 
         step = script """#!/bin/bash
         echo "bash script - ${dir}"
