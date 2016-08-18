@@ -267,6 +267,7 @@ The table below shows the CLI options that are available.
 
 | Short<br>Option | Long<br>Option | Description   |
 | --------------- | -------------- | ------------- |
+| -f FILE         | --flatten FILE | Flatten a recipe into a file. Useful for debugging and dry run analyses. |
 | -h              | --help         | Help message. |
 | -l              | --list         | List the available recipes with a brief description. |
 | -q              | --quiet        | Run quietly. Very useful for --help, --list and recipe help commands. |
