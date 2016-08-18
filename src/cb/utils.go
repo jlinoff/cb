@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/xml"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,27 +12,6 @@ import (
 	"strings"
 	"unicode"
 )
-
-// SandboxRoot get the directory that contains the repo. This is the top
-// of the sandbox.
-// If it is found, the sandbox directory is returned.
-// If it is not found, the sandbox directory is "".
-func SandboxRoot() (root string) {
-	wd, _ := os.Getwd()
-	ap, _ := filepath.Abs(wd)
-	sep := fmt.Sprintf("%c", os.PathSeparator)
-	d := strings.Split(ap, sep)
-	for len(d) > 0 {
-		repodir := sep + path.Join(d...)
-		repo := path.Join(repodir, ".repo")
-		if PathExists(repo) {
-			root = repodir
-			return
-		}
-		d = d[:len(d)-1]
-	}
-	return
-}
 
 // PathExists reports whether a path exists.
 func PathExists(path string) bool {
@@ -88,69 +66,6 @@ type RepoProject struct {
 	name    string
 	path    string
 	abspath string
-}
-
-// GetRepoProjects gets the repo projects from the manifest.xml file.
-func GetRepoProjects() (projects []RepoProject) {
-	// Get the root of the sandbox.
-	root := SandboxRoot()
-	if root == "" {
-		Log.ErrWithLevel(3, "not in a sandbox")
-	}
-
-	// Get the manifest.
-	manifest := path.Join(root, ".repo", "manifest.xml")
-	if _, err := os.Stat(manifest); os.IsNotExist(err) {
-		Log.ErrWithLevel(3, "manifest file does not exist: %v", manifest)
-	}
-
-	// Read the manifest to get the project data.
-	// It is an XML file of the form:
-	//    <?xml version="1.0" encoding="UTF-8"?>
-	//    <manifest>
-	//       <remote name="origin" fetch="http://sfxsv-cmgerrit:8080" review="sfxsv-cmgerrit:8080" />
-	//       <default remote="origin" revision="1.4.0" />
-	//       <project name="cryptomanager" path="." />
-	//       <project name="tools" path="tools" />
-	//       <project name="cmservice" path="./devices/cmservice" />
-	//       <project name="vmware-automation" path="vmware-automation" />
-	//    </manifest>
-	// Note that I am not using a schema here, I am only looking for the "project"
-	// element.
-	fp, err := os.Open(manifest)
-	if err != nil {
-		Log.ErrWithLevel(3, "could not read file: %v", manifest)
-	}
-	defer fp.Close()
-	decoder := xml.NewDecoder(fp)
-	for {
-		token, _ := decoder.Token()
-		if token == nil {
-			break
-		}
-		switch elem := token.(type) {
-		case xml.StartElement:
-			if elem.Name.Local == "project" {
-				// Grab the name and path attributes.
-				n := ""
-				p := ""
-				for _, a := range elem.Attr {
-					switch a.Name.Local {
-					case "name":
-						n = a.Value
-					case "path":
-						p = a.Value
-					}
-				}
-				if n != "" && p != "" {
-					ap := path.Join(root, p)
-					project := RepoProject{name: n, path: p, abspath: ap}
-					projects = append(projects, project)
-				}
-			}
-		}
-	}
-	return
 }
 
 // MakeCmdString to create a string.
