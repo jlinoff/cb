@@ -166,6 +166,9 @@ RECIPES
         script                      Embed an anonymous, in-line script.
                                     You can use any scripting language.
                                     They are generated dynamically in %[3]v.
+                                    You can change a variable setting by
+                                    specifying a line of the form:
+                                        ###export <variable> = <value>
 
     Here is an example recipe. It is named list-files.ini so you can refer to it
     as "list-files" on the command line.
@@ -206,6 +209,15 @@ RECIPES
         step = script """#!/usr/bin/env python
         print("python script - {}".format("${dir}"))
         """
+
+        # Reset the value of the dir variable from an anonymous script.
+        # It will be /var for all subsequent steps.
+        step = script """#!/bin/bash
+        echo "###export dir=/var"
+        """
+
+        # dir will be /var
+        step = exec ls -l ${dir}
 
         step = info done
 

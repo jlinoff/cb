@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -97,14 +98,19 @@ func runRecipe(opts CliOptions) {
 		Log.Info("step.pwd = %v %v", i+1, wd)
 
 		// Run the step.
+		var buf bytes.Buffer
 		stepStart := time.Now()
 		switch step.Directive {
 		case stepCd:
 			Chdir(step.Data)
 		case stepExec:
+			Log.Writers = append(Log.Writers, &buf) // push
 			RunCmd("%v", step.Data)
+			Log.Writers = Log.Writers[:len(Log.Writers)-1] // popd (no tos)
 		case stepExecNoExit:
+			Log.Writers = append(Log.Writers, &buf) // push
 			RunCmdNoExit("%v", step.Data)
+			Log.Writers = Log.Writers[:len(Log.Writers)-1] // popd (no tos)
 		case stepExport:
 			flds := strings.SplitN(step.Data, "=", 2)
 			key := flds[0]
@@ -135,7 +141,6 @@ func runRecipe(opts CliOptions) {
 			}
 		case stepScript:
 			// Create a temporary script and execute it.
-			// Note that it does not have to be executable.
 			MkdirAll(Context.ScriptDir, 0700)
 			fn := fmt.Sprintf("%v/%v.sh", Context.ScriptDir, Context.UserPID)
 			Log.Info("creating anonymous script file: %v", fn)
@@ -147,13 +152,69 @@ func runRecipe(opts CliOptions) {
 			fp.Close()
 			os.Chmod(fn, 0700)
 			cmd := fn
+
+			// Run the command, capture the output so that we can check for
+			// updated variables (###export var=value)
+			Log.Writers = append(Log.Writers, &buf) // push
 			RunCmd(cmd)
+			Log.Writers = Log.Writers[:len(Log.Writers)-1] // popd (no tos)
+
+			// Cleanup.
 			Log.Info("deleting anonymous script file: %v", fn)
 			os.Remove(fn)
 		default:
 			Log.Err("unrecognized directive %v (%v) in %v", step.Directive, step.DirectiveString, recipe.File)
 		}
+		runRecipeResetVariablesFromOutput(buf, &recipe)
 		Log.Info("step.end = %v %.03f", i+1, time.Since(stepStart).Seconds())
+	}
+}
+
+// runRecipeResetVariablesFromOutput resets variables from the command
+// output if it encounters this:
+//     ###export <variable> = <value>
+func runRecipeResetVariablesFromOutput(buf bytes.Buffer, recipe *RecipeInfo) {
+	// Check to see if the script generated lines that change variable settings.
+	// The lines look like this:
+	//     ###export <variable> = <value>
+	if buf.Len() > 0 {
+		stdout := buf.String()
+		if strings.Contains(stdout, "###export") {
+			// The user wants to change a variable.
+			re := regexp.MustCompile(`^\s*###export\s+([a-z0-9\-_]+)\s*=\s*(.+)$`)
+			lines := strings.Split(stdout, "\n")
+			for _, line := range lines {
+				m := re.FindAllStringSubmatch(line, -1)
+				if len(m) > 0 && len(m[0]) > 1 {
+					ekey := m[0][1]
+					eval := strings.TrimSpace(m[0][2])
+
+					// See if it was quoted.
+					//    ###export foo = "bar spam"
+					if eval[0] == '"' {
+						x, e := strconv.Unquote(eval)
+						if e != nil {
+							Log.Warn("unquote error for '%v' -- cannot update")
+							continue
+						}
+						eval = x
+					}
+
+					// Change the value for subsequent steps.
+					val, ok := recipe.Variables[ekey]
+					if ok {
+						if eval != val {
+							Log.Info("changing export variable: %v = '%v'", ekey, eval)
+							recipe.Variables[ekey] = eval
+						}
+					} else {
+						// The variable doesn't exist, create it.
+						Log.Info("creating export variable: %v = '%v'", ekey, eval)
+						recipe.Variables[ekey] = eval
+					}
+				}
+			}
+		}
 	}
 }
 
