@@ -180,7 +180,7 @@ in the following table.
 ### 4.4 Setting variables from inside scripts
 
 There are some occasions where you need to be able to change the
-value of a variable from inside a script to set state for subsequent
+value of a recipe variable from inside a script to set state for subsequent
 steps. Cb allows you to do this by recognizing specially formatted
 messages in the output of the script. 
 
