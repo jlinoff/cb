@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -69,91 +70,34 @@ func runRecipe(opts CliOptions) {
 	// We need to load the recipe to get the variable names.
 	recipe := loadRecipe(opts.Recipe)
 
-	// Use the recipe variable names to check the extra arguments.
-	// Convert the arguments to options.
-	ropts := map[string]string{}
-	ks := []string{}
-	for k := range recipe.Variables {
-		o := "--" + k
-		ropts[o] = k
-		ks = append(ks, o)
-	}
-
-	// Check the options.
-	for i := 0; i < len(opts.ExtraArgs); i++ {
-		opt := opts.ExtraArgs[i]
-
-		// Make sure that the option is valid.
-		_, ok := ropts[opt]
-		if ok == false {
-			if len(ks) > 0 {
-				sort.Strings(ks)
-				Log.Err("invalid option specified '%v', valid options are %v", opt, ks)
-			} else {
-				Log.Err("invalid option specified '%v', there are no valid options", opt)
-			}
-		}
-
-		// Now get the value.
-		i++
-		if i >= len(opts.ExtraArgs) {
-			Log.Err("missing argument for '%v'", opt)
-		}
-		val := opts.ExtraArgs[i]
-		key := ropts[opt]
-		recipe.Variables[key] = val
-	}
-
-	// Verify that all of the required variables have values.
-	en := 0
-	for key, val := range recipe.Variables {
-		if val == "" {
-			en++
-			Log.ErrNoExit("option '--%v' has no value", key)
-		}
-	}
-	if en > 0 {
-		Log.Err("unset variables found, cannot continue")
-	}
-
-	// Do the variable substitution for all variables and steps.
-	// First do the variables.
-	for key, val := range recipe.Variables {
-		variable := fmt.Sprintf("${%v}", key)
-
-		// Replace all occurrences of the variable in the value portion
-		// of the variables. This does not affect the outer loop because
-		// we are not changing the key.
-		for n1, v1 := range recipe.Variables {
-			if n1 != key { // skip ourself
-				v2 := strings.Replace(v1, variable, val, -1)
-				if v2 != v1 {
-					recipe.Variables[n1] = v2
-				}
-			}
-		}
-	}
-
-	// Update the variables in each step.
-	for key, val := range recipe.Variables {
-		variable := fmt.Sprintf("${%v}", key)
-
-		// Replace all of the occurrences of the variable in the steps.
-		for i, step := range recipe.Steps {
-			n := strings.Replace(step.Data, variable, val, -1)
-			if n != step.Data {
-				recipe.Steps[i].Data = n
-			}
-		}
-	}
+	// Set the recipe variables.
+	runRecipeInitVariables(&recipe, opts)
 
 	// Execute the steps.
 	for i, step := range recipe.Steps {
-		if strings.Contains(step.Data, "\n") {
-			Log.Info("step %v - %v %v", i+1, step.DirectiveString, "multi-line")
-		} else {
-			Log.Info("step %v - %v %v", i+1, step.DirectiveString, step.Data)
+		// Update the variables before each step.
+		// This is done here to allow the variables to be changed dynamically.
+		if strings.Contains(step.Data, "${") {
+			for key, val := range recipe.Variables {
+				variable := fmt.Sprintf("${%v}", key) // format is ${<name>}.
+				n := strings.Replace(step.Data, variable, val, -1)
+				if n != step.Data {
+					step.Data = n
+				}
+			}
 		}
+
+		// Report step information.
+		if strings.Contains(step.Data, "\n") {
+			Log.Info("step.start = %v %v %v", i+1, step.DirectiveString, "multi-line")
+		} else {
+			Log.Info("step.start = %v %v %v", i+1, step.DirectiveString, step.Data)
+		}
+		wd, _ := os.Getwd()
+		Log.Info("step.pwd = %v %v", i+1, wd)
+
+		// Run the step.
+		stepStart := time.Now()
 		switch step.Directive {
 		case stepCd:
 			Chdir(step.Data)
@@ -208,6 +152,76 @@ func runRecipe(opts CliOptions) {
 			os.Remove(fn)
 		default:
 			Log.Err("unrecognized directive %v (%v) in %v", step.Directive, step.DirectiveString, recipe.File)
+		}
+		Log.Info("step.end = %v %.03f", i+1, time.Since(stepStart).Seconds())
+	}
+}
+
+// runRecipeInitVariables initializes the recipe variables.
+func runRecipeInitVariables(recipe *RecipeInfo, opts CliOptions) {
+	// Use the recipe variable names to check the extra arguments.
+	// Convert the arguments to options.
+	ropts := map[string]string{}
+	ks := []string{}
+	for k := range recipe.Variables {
+		o := "--" + k
+		ropts[o] = k
+		ks = append(ks, o)
+	}
+
+	// Check the options.
+	for i := 0; i < len(opts.ExtraArgs); i++ {
+		opt := opts.ExtraArgs[i]
+
+		// Make sure that the option is valid.
+		_, ok := ropts[opt]
+		if ok == false {
+			if len(ks) > 0 {
+				sort.Strings(ks)
+				Log.Err("invalid option specified '%v', valid options are %v", opt, ks)
+			} else {
+				Log.Err("invalid option specified '%v', there are no valid options", opt)
+			}
+		}
+
+		// Now get the value.
+		i++
+		if i >= len(opts.ExtraArgs) {
+			Log.Err("missing argument for '%v'", opt)
+		}
+		val := opts.ExtraArgs[i]
+		key := ropts[opt]
+		recipe.Variables[key] = val
+	}
+
+	// Verify that all of the required variables have values.
+	en := 0
+	for key, val := range recipe.Variables {
+		if val == "" {
+			en++
+			Log.ErrNoExit("option '--%v' has no value", key)
+		}
+	}
+	if en > 0 {
+		Log.Err("unset variables found, cannot continue")
+	}
+
+	// Do the variable substitution for all variables.
+	// The substitutions for the steps are done just-in-time to
+	// allow the variable values to be updated dynamically.
+	for key, val := range recipe.Variables {
+		variable := fmt.Sprintf("${%v}", key)
+
+		// Replace all occurrences of the variable in the value portion
+		// of the variables. This does not affect the outer loop because
+		// we are not changing the key.
+		for n1, v1 := range recipe.Variables {
+			if n1 != key { // skip ourself
+				v2 := strings.Replace(v1, variable, val, -1)
+				if v2 != v1 {
+					recipe.Variables[n1] = v2
+				}
+			}
 		}
 	}
 }
