@@ -177,7 +177,25 @@ in the following table.
 | must-not-exist-file FILE| Fail if file FILE exists.<br>This is shortand for<br>`step = exec /bin/bash -c "[ ! -f FILE ] && exit 0 || exit 1"` |
 | script `""" ... """`      | Embed an anonymous, in-line script. You can use any scripting language. |
 
-### 4.4 Example Recipe
+### 4.4 Setting variables from inside scripts
+
+There are some occasions where you need to be able to change the
+value of a recipe variable from inside a script to set state for subsequent
+steps. Cb allows you to do this by recognizing specially formatted
+messages in the output of the script. 
+
+The message format for changing a variable value is shown below.
+
+    ###export VARIABLE = VALUE
+    
+It must appear as a separate line.
+
+If the variable does not exist, it will be created.
+
+White space around the value is trimmed. If you want to keep white space,
+you can quote the value.
+
+### 4.5 Example Recipe
 Here is a full example of a recipe.
 
     # This is an example recipe.
@@ -216,6 +234,14 @@ Here is a full example of a recipe.
     step = script """#!/usr/bin/env python
     print("python script - {}".format("${dir}"))
     """
+    
+    # Change dir to be /var for all subsequent steps.
+    step = script """#!/bin/bash
+    echo "###export dir=/var"
+    """
+    
+    # Will list the contents of /var.
+    step = exec ls -l ${dir}
 
     step = info done
 
@@ -229,6 +255,7 @@ to it by default.
 | CB_BASE      | Base name of package (CB). |
 | CB_BUILDDATE | Date that the package was built. Set by the Makefile. |
 | CB_PID       | Process ID of the job that is running the recipe. |
+| CB_PWD       | The directory the command was started from. |
 | CB_RECIPES   | The recipes directory. |
 | CB_SCRIPTS   | The scripts cache directory. |
 | CB_TIMESTAMP | The timestamp (suitable for use a file name) of the time that the run was started. |
