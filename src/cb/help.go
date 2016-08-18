@@ -248,6 +248,9 @@ ENVIRONMENT VARIABLES
 OPTIONS
     -h, --help         On-line help. Same as "%[1]v help".
 
+    -f FILE, --flatten FILE
+                       Flatten a recipe into a file.
+                       
     -l, --list         List the available recipes with a brief description.
 
     -q, --quiet        Run quietly. Very useful for --help, --list and recipe

@@ -21,7 +21,9 @@ const (
 // CliOptions are the command line options.
 type CliOptions struct {
 	Action      CliOptionsType
+	Dryrun      bool
 	HelpArg     string
+	Flatten     string
 	Tee         bool
 	Quiet       bool
 	ShellScript string
@@ -36,6 +38,9 @@ func NewCliOptions() (opts CliOptions) {
 	for i := 1; i < len(os.Args); i++ {
 		arg := os.Args[i]
 		switch arg {
+		case "-d", "--dryrun":
+			// Dry run.
+			opts.Dryrun = true
 		case "-h", "--help", "help":
 			// help can have an optional argument
 			// can't do it here because the optional
@@ -46,6 +51,10 @@ func NewCliOptions() (opts CliOptions) {
 			if i < len(os.Args) {
 				opts.HelpArg = os.Args[i]
 			}
+		case "-f", "--flatten":
+			// flatten means flatten a recipe.
+			// It is only invoked for a recipe.
+			opts.Flatten = cliGetNextArg(&i)
 		case "-l", "--list":
 			// list means list all of the recipes along with their brief descriptions
 			if opts.Action == actionUnknown {

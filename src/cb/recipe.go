@@ -53,6 +53,7 @@ type RecipeStep struct {
 	Directive       RecipeStepType
 	DirectiveString string
 	Data            string
+	Line            LineInfo
 }
 
 // RecipeInfo stores the information for a recipe.
@@ -61,13 +62,16 @@ type RecipeInfo struct {
 	Name      string
 	Full      string
 	Brief     string
-	Aliases   map[string]int
 	Variables map[string]string
 	Steps     []RecipeStep
 }
 
 // runRecipe runs a recipe.
 func runRecipe(opts CliOptions) {
+	if len(opts.Flatten) > 0 {
+		runRecipeFlatten(opts)
+		return
+	}
 	// We need to load the recipe to get the variable names.
 	recipe := loadRecipe(opts.Recipe)
 
@@ -285,6 +289,71 @@ func runRecipeInitVariables(recipe *RecipeInfo, opts CliOptions) {
 			}
 		}
 	}
+}
+
+// runRecipeFlatten flattens a recipe for debugging.
+func runRecipeFlatten(opts CliOptions) {
+	Log.Info("flattening recipe %v to %v", opts.Recipe, opts.Flatten)
+
+	// We need to load the recipe to get the variable names.
+	recipe := loadRecipe(opts.Recipe)
+
+	fp, err := os.Create(opts.Flatten)
+	if err != nil {
+		Log.Err("unable to create file %v", opts.Flatten)
+	}
+
+	// description section
+	fmt.Fprintf(fp, "[description]\n")
+	fmt.Fprintf(fp, "brief = %v\n", strconv.Quote(recipe.Brief))
+	fmt.Fprintf(fp, "full = ")
+	if strings.Contains(recipe.Full, "\n") {
+		fmt.Fprintf(fp, "\"\"\"\n%v\n\"\"\"", recipe.Full)
+	} else {
+		fmt.Fprintf(fp, "full = %v", strconv.Quote(recipe.Full))
+	}
+
+	// variable section
+	if len(recipe.Variables) > 0 {
+		fmt.Fprintf(fp, "\n")
+		fmt.Fprintf(fp, "[variable]\n")
+		ks := []string{}
+		for k := range recipe.Variables {
+			ks = append(ks, k)
+		}
+		sort.Strings(ks)
+		for _, k := range ks {
+			fmt.Fprintf(fp, "%v = ", k)
+			val := recipe.Variables[k]
+			if strings.Contains(val, "\n") {
+				fmt.Fprintf(fp, "\"\"\"\n%v\n\"\"\"", val)
+			} else {
+				fmt.Fprintf(fp, "%v", strconv.Quote(val))
+			}
+			fmt.Fprintf(fp, "\n")
+		}
+	}
+
+	// step section
+	if len(recipe.Steps) > 0 {
+		fmt.Fprintf(fp, "\n")
+		fmt.Fprintf(fp, "[step]\n")
+
+		for i, step := range recipe.Steps {
+			if i > 0 {
+				fmt.Fprintf(fp, "\n")
+			}
+			fmt.Fprintf(fp, "# Step %v\n", i+1)
+			fmt.Fprintf(fp, "step = %v ", step.DirectiveString)
+			if strings.Contains(step.Data, "\n") {
+				fmt.Fprintf(fp, "\"\"\"\n%v\n\"\"\"", step.Data)
+			} else {
+				fmt.Fprintf(fp, "%v", strconv.Quote(step.Data))
+			}
+			fmt.Fprintf(fp, "\n")
+		}
+	}
+	Log.Info("done")
 }
 
 // loadRecipe loads a recipe.
@@ -562,7 +631,7 @@ func makeRecipe(recipeFile string, lines []LineInfo) (rec RecipeInfo) {
 			if ok == false {
 				Log.Err("unknown step directive '%v' at line %v in %v", directive, li.lineno, li.fi.abspath)
 			}
-			rec.Steps = append(rec.Steps, RecipeStep{Directive: stype, DirectiveString: directive, Data: value})
+			rec.Steps = append(rec.Steps, RecipeStep{Directive: stype, DirectiveString: directive, Data: value, Line: li})
 			if stype == stepExport {
 				// Export has a specific syntax, check it.
 				if strings.Contains(value, "=") == false {
