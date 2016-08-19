@@ -199,7 +199,11 @@ you can quote the value.
 You can use ${CB_EXE} to call other recipes like this:
 
     # Call other another recipe.
-    step = exec ${CB_EXE} --arg1 arg1
+    step = exec ${CB_EXE} nested-recipe --arg1 arg1
+    
+    step = script """#!/bin/bash
+    ${CB_EXE} nested-recipe --arg1 arg1
+    """
 
 Use this approach with caution because you could end up with infinite
 recursion for a recipe that calls itself.
