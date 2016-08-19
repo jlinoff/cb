@@ -195,7 +195,16 @@ If the variable does not exist, it will be created.
 White space around the value is trimmed. If you want to keep white space,
 you can quote the value.
 
-### 4.5 Example Recipe
+### 4.5 Calling other recipes
+You can use ${CB_EXE} to call other recipes like this:
+
+    # Call other another recipe.
+    step = exec ${CB_EXE} --arg1 arg1
+
+Use this approach with caution because you could end up with infinite
+recursion for a recipe that calls itself.
+
+### 4.6 Example recipe
 Here is a full example of a recipe.
 
     # This is an example recipe.
