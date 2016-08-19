@@ -60,6 +60,7 @@ func main() {
 	}
 	setenv("base", Context.Base)
 	setenv("builddate", Context.MakeBuildDate)
+	setenv("exe", Context.ExePath)
 	setenv("pid", strconv.Itoa(Context.UserPID))
 	setenv("pwd", Context.Pwd)
 	setenv("recipes", Context.RecipeDir)

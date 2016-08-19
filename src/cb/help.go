@@ -228,13 +228,10 @@ RECIPES
         $ %[1]v list-files
 
     To print the help, do this:
-        % %[1]v help list-files
+        $ %[1]v help list-files
 
     To list a different directory, do this:
-        % %[1]v list-files --dir /var/run
-
-    To generate a shell script of this recipe, do this:
-        $ %[1]v -s x.sh list-files --dir /var/run
+        $ %[1]v list-files --dir /var/run
 
 ENVIRONMENT VARIABLES
     When a recipe is run there are environment variables that are made available
@@ -245,12 +242,21 @@ ENVIRONMENT VARIABLES
     To use an environment variable just reference it like a normal variable. Here
     is an example: ${%[2]v_USERNAME}.
 
+CALLING OTHER RECIPES
+    You can use ${%[2]v_EXE} to call other recipes like this:
+
+        # Call other another recipe.
+        step = exec ${%[2]v_EXE} --arg1 arg1
+
+    Use this approach with caution because you could end up with infinite
+    recursion for a recipe that calls itself.
+
 OPTIONS
     -h, --help         On-line help. Same as "%[1]v help".
 
     -f FILE, --flatten FILE
                        Flatten a recipe into a file.
-                       
+
     -l, --list         List the available recipes with a brief description.
 
     -q, --quiet        Run quietly. Very useful for --help, --list and recipe
