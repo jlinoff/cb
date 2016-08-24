@@ -241,9 +241,22 @@ func runRecipeInitVariables(recipe *RecipeInfo, opts CliOptions) {
 		// Make sure that the option is valid.
 		_, ok := ropts[opt]
 		if ok == false {
+			// Don't print the environment variables, they only confuse things.
+			vks := []string{} // visible variables
 			if len(ks) > 0 {
 				sort.Strings(ks)
-				Log.Err("invalid option specified '%v', valid options are %v", opt, ks)
+				prefix := strings.ToUpper(fmt.Sprintf("--%v_", Context.Base))
+				for _, k := range ks {
+					if strings.HasPrefix(k, prefix) {
+						continue
+					}
+					vks = append(vks, k)
+				}
+			}
+
+			// If visible variables are present, show them.
+			if len(vks) > 0 {
+				Log.Err("invalid option specified '%v', valid options are %v", opt, vks)
 			} else {
 				Log.Err("invalid option specified '%v', there are no valid options", opt)
 			}
@@ -385,6 +398,17 @@ func loadRecipe(recipeRef string) (recipe RecipeInfo) {
 	nested := map[string]int{}
 	lines := readRecipeFile(recipeFile, nested)
 	recipe = makeRecipe(recipeFile, lines)
+
+	// Update the recipe with the environment variables.
+	prefix := strings.ToUpper(fmt.Sprintf("%v_", Context.Base))
+	for _, e := range os.Environ() {
+		flds := strings.SplitN(e, "=", 2)
+		key := strings.TrimSpace(flds[0])
+		val := strings.TrimSpace(flds[1])
+		if strings.HasPrefix(key, prefix) {
+			recipe.Variables[key] = val
+		}
+	}
 	return
 }
 

@@ -1,4 +1,4 @@
-VERSION  := 0.8.2
+VERSION  := 0.8.3
 MKVER    := src/cb/mkver.go
 PROJECTS := 	src/github.com/jlinoff/go/msg \
 		src/github.com/jlinoff/go/run \
@@ -50,6 +50,7 @@ test: bin/cb
 	bin/cb list-files
 	bin/cb -q test-info
 	bin/cb test-script
+	bin/cb -q test-call
 
 edit: src/github.com/golang/lint/README.md
 	PATH="$$(pwd)/bin:$${PATH}" \
