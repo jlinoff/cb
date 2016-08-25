@@ -287,7 +287,7 @@ The table below shows the CLI options that are available.
 | -q              | --quiet        | Run quietly. Only error messages are printed. If -q and -v are not specified, error and warning messages are printed. |
 | -r DIR          | -recipes DIR   | The path to the recipes directory. The default path ../etc/cb/recipes relative to the cb executable. |
 | -t              | --tee          | Log all messages to a unique log file as well as stdout. It saves having to create a unique file name for each run using the command line tee tool. The format is cb-[YYYYMM]-[hhmms]-[USERNAME].log |
-| -v              | --verbose      | Increase the level of verbosity. If you specify it once "-v", informational messages and banners are printed for each step. If you specify it twice, debug messages are added. |
+| -v              | --verbose      | Increase the level of verbosity. If you specify it once "-v", informational messages and banners are printed for each step. |
 | -V              | --version      | Print the program name and exit. |
 
 ## 7. Examples
@@ -326,4 +326,70 @@ $ cb -v -r ~/my/recipes myone
 ### 7.7 Run a recipe outside of a recipe archive.
 ```bash
 $ cb -v /tmp/test-recipe.ini
+```
+## 8 Examples demonstrating the verbosity levels
+
+### 8.1 default
+The default level only prints warning and error messages as well as the output that you explicitly
+specify in the recipes.
+```bash
+$ bin/cb msg --text 'hello, world!'
+hello, world!
+```
+
+### 8.2 quiet mode
+For this example it is exactly the same as 8.1 because there are no internal warning messages. Note that the `-q` option has to be specified before the recipe. If that is not done, it is assumed to be associated with the recipe.
+```bash
+$ bin/cb -q msg --text 'hello, world!'
+hello, world!
+```
+
+### 8.3 verbose mode
+This has a lot more output including context information and banners. It is really useful for capturing state information from recipes for later debugging. Note that the `-v` option has to be specified before the recipe. If that is not done, it is assumed to be associated with the recipe.
+
+```bash
+$ bin/cb -v  msg --text 'hello, world!'
+cb 2016-08-25 06:02:02.040 PDT INFO    context   97 - context
+cb 2016-08-25 06:02:02.040 PDT INFO    context   98 -    base     : cb
+cb 2016-08-25 06:02:02.040 PDT INFO    context   99 -    cmd      : bin/cb -v msg --text "hello, world!"
+cb 2016-08-25 06:02:02.040 PDT INFO    context  100 -    exe      : /Users/jlinoff/work/cb/bin/cb
+cb 2016-08-25 06:02:02.040 PDT INFO    context  101 -    gid      : 439819796
+cb 2016-08-25 06:02:02.040 PDT INFO    context  102 -    numcpus  : 8
+cb 2016-08-25 06:02:02.040 PDT INFO    context  103 -    os       : darwin
+cb 2016-08-25 06:02:02.040 PDT INFO    context  104 -    osver    : Darwin 15.6.0 Darwin Kernel Version 15.6.0: Thu Jun 23 18:25:34 PDT 2016; root:xnu-3248.60.10~1/RELEASE_X86_64 x86_64
+cb 2016-08-25 06:02:02.040 PDT INFO    context  105 -    pid      : 53965
+cb 2016-08-25 06:02:02.040 PDT INFO    context  106 -    pwd      : /Users/jlinoff/work/cb
+cb 2016-08-25 06:02:02.041 PDT INFO    context  107 -    recipes  : /Users/jlinoff/work/cb/etc/cb/recipes
+cb 2016-08-25 06:02:02.041 PDT INFO    context  108 -    scripts  : /Users/jlinoff/.cb
+cb 2016-08-25 06:02:02.041 PDT INFO    context  112 -    time     : 2016-08-25 06:02:02
+cb 2016-08-25 06:02:02.041 PDT INFO    context  113 -    timestamp: 20160825-060202
+cb 2016-08-25 06:02:02.041 PDT INFO    context  114 -    uid      : 2050239280
+cb 2016-08-25 06:02:02.041 PDT INFO    context  115 -    user     : jlinoff
+cb 2016-08-25 06:02:02.041 PDT INFO    context  116 -    version  : 0.8.4 - Thu Aug 25 06:38:18 PDT 2016
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_BASE=cb
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_BUILDDATE=Thu Aug 25 06:38:18 PDT 2016
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_EXE=/Users/jlinoff/work/cb/bin/cb
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_PID=53965
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_PWD=/Users/jlinoff/work/cb
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_RECIPES=/Users/jlinoff/work/cb/etc/cb/recipes
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_SCRIPTS=/Users/jlinoff/.cb
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_TIMESTAMP=20160825-060202
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_USERNAME=jlinoff
+cb 2016-08-25 06:02:02.041 PDT INFO    main      74 - built-in env var CB_VERSION=0.8.4
+cb 2016-08-25 06:02:02.041 PDT INFO    recipe   412 - loading recipe 'msg'
+cb 2016-08-25 06:02:02.041 PDT INFO    recipe   422 - appending extension: '.ini'
+cb 2016-08-25 06:02:02.041 PDT INFO    recipe   428 - prepending directory path: '/Users/jlinoff/work/cb/etc/cb/recipes'
+cb 2016-08-25 06:02:02.041 PDT INFO    recipe   432 - recipe file '/Users/jlinoff/work/cb/etc/cb/recipes/msg.ini'
+cb 2016-08-25 06:02:02.043 PDT INFO    recipe   102 - step.start = 1 info hello, world!
+cb 2016-08-25 06:02:02.043 PDT INFO    recipe   105 - step.pwd = 1 /Users/jlinoff/work/cb
+
+# ================================================================
+# Step 1 of 1 (100.00%)
+# Recipe Name: msg
+# Recipe File: /Users/jlinoff/work/cb/etc/cb/recipes/msg.ini
+#
+# step = info "hello, world!"
+# ================================================================
+hello, world!
+cb 2016-08-25 06:02:02.043 PDT INFO    recipe   177 - step.end = 1 0.000
 ```
