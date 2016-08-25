@@ -284,10 +284,10 @@ The table below shows the CLI options that are available.
 | -h              | --help         | Help message. |
 | -l              | --list         | List the available recipes with a brief description. |
 |                 | --no-banner    | Disable banners in verbose mode. This is experimental and may be removed. |
-| -q              | --quiet        | Run quietly. Only error messages are printed. If -q and -v are not specified, error and warning messages are printed. |
+| -q              | --quiet        | Run quietly. Only error messages are printed. <br> If -q and -v are not specified, error and warning messages are printed. |
 | -r DIR          | -recipes DIR   | The path to the recipes directory. The default path ../etc/cb/recipes relative to the cb executable. |
-| -t              | --tee          | Log all messages to a unique log file as well as stdout. It saves having to create a unique file name for each run using the command line tee tool. The format is cb-[YYYYMM]-[hhmms]-[USERNAME].log |
-| -v              | --verbose      | Increase the level of verbosity. If you specify it once "-v", informational messages and banners are printed for each step. |
+| -t              | --tee          | Log all messages to a unique log file as well as stdout. It saves having to create a unique file name for each run using the command line tee tool. <br> The format is cb-[YYYYMM]-[hhmms]-[USERNAME].log <br> If you want to use a specific log file, you the `tee` command line tool instead.|
+| -v              | --verbose      | Increase the level of verbosity. It is very useful when running recipes. |
 | -V              | --version      | Print the program name and exit. |
 
 ## 7. Examples
