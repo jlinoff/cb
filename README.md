@@ -38,15 +38,15 @@ The syntax for running a recipe is very simple:
 
 Here is how you list all recipes along with a brief description:
 
-    $ cb -q --list
+    $ cb --list
 
 Here is how you get detailed information for a specific recipe:
 
-    $ cb -q help <recipe>
+    $ cb help <recipe>
 
 Here is how you run a recipe:
 
-    $ cb <recipe> <recipe-options>
+    $ cb -v <recipe> <recipe-options>
 
 Each recipe is defined by an INI file with three parts: the description,
 the variables and the steps. These sections are described in detail in
@@ -61,9 +61,9 @@ Here is how you would download and install it assuming the go 1.6.3 or later is 
 $ git clone https://github.com/jlinoff/cb.git
 $ cd cb
 $ make
-$ bin/cb
-$ bin/cb -q -h
-$ bin/cb -q help test-script
+$ bin/cb -v
+$ bin/cb -h
+$ bin/cb help test-script
 ```
 
 ## 4. Recipes
@@ -283,45 +283,47 @@ The table below shows the CLI options that are available.
 | -f FILE         | --flatten FILE | Flatten a recipe into a file. Useful for debugging and dry run analyses. |
 | -h              | --help         | Help message. |
 | -l              | --list         | List the available recipes with a brief description. |
-| -q              | --quiet        | Run quietly. Very useful for --help, --list and recipe help commands. |
+|                 | --no-banner    | Disable banners in verbose mode. This is experimental and may be removed. |
+| -q              | --quiet        | Run quietly. Only error messages are printed. If -q and -v are not specified, error and warning messages are printed. |
 | -r DIR          | -recipes DIR   | The path to the recipes directory. The default path ../etc/cb/recipes relative to the cb executable. |
 | -t              | --tee          | Log all messages to a unique log file as well as stdout. It saves having to create a unique file name for each run using the command line tee tool. The format is cb-[YYYYMM]-[hhmms]-[USERNAME].log |
+| -v              | --verbose      | Increase the level of verbosity. If you specify it once "-v", informational messages and banners are printed for each step. If you specify it twice, debug messages are added. |
 | -V              | --version      | Print the program name and exit. |
 
 ## 7. Examples
 
 ### 7.1 Get help.
 ```bash
-$ cb -q -h
-$ cb -q help
+$ cb -h
+$ cb help
 ```
 
 ### 7.2 List all available recipes.
 ```bash
-$ cb -q --list
+$ cb -list
 ```
 
 ### 7.3 Get help about a recipe named alice.
 ```bash
-$ cb -q help alice
+$ cb help alice
 ```
 
 ### 7.4 Show your local configuration.
 ```bash
-$ cb
+$ cb -v
 ```
 
 ### 7.5 Run recipe bob with automatic logging.
 ```bash
-$ cb -t bob
+$ cb -v -t bob
 ```
 
 ### 7.6 Run using local recipes.
 ```bash
-$ cb -r ~/my/recipes myone
+$ cb -v -r ~/my/recipes myone
 ```
 
 ### 7.7 Run a recipe outside of a recipe archive.
 ```bash
-$ cb /tmp/test-recipe.ini
+$ cb -v /tmp/test-recipe.ini
 ```
