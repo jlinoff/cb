@@ -21,10 +21,26 @@ var Log *msg.Object
 
 func main() {
 	opts := NewCliOptions()
-	if opts.Quiet {
+
+	// Set the level of verbosity.
+	// Note that you can never turn off errors.
+	switch opts.Verbose {
+	case 0:
 		Log.DebugEnabled = false
 		Log.InfoEnabled = false
 		Log.WarningEnabled = false
+	case 1:
+		Log.DebugEnabled = false
+		Log.InfoEnabled = false
+		Log.WarningEnabled = true
+	case 2:
+		Log.DebugEnabled = false
+		Log.InfoEnabled = true
+		Log.WarningEnabled = true
+	default:
+		Log.DebugEnabled = true
+		Log.InfoEnabled = true
+		Log.WarningEnabled = true
 	}
 
 	// Create the tee file, if necessary.

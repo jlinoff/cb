@@ -239,8 +239,8 @@ ENVIRONMENT VARIABLES
 
         %[4]v
 
-    To use an environment variable just reference it like a normal variable. Here
-    is an example: ${%[2]v_USERNAME}.
+    To use an environment variable just reference it like a normal variable.
+    Here is an example: ${%[2]v_USERNAME}.
 
 CALLING OTHER RECIPES
     You can use ${%[2]v_EXE} to call other recipes like this:
@@ -259,8 +259,11 @@ OPTIONS
 
     -l, --list         List the available recipes with a brief description.
 
-    -q, --quiet        Run quietly. Very useful for --help, --list and recipe
-                       help commands.
+    -q, --quiet        Run quietly. Only error messages are printed.
+                       If -q and -v are not specified, only ERROR and WARNING
+                       messages are printed.
+
+    --no-banner        Turn off the step banner in verbose mode.
 
     -r DIR, --recipes DIR
                        The path to the recipes directory.
@@ -274,6 +277,12 @@ OPTIONS
                        The output file name is
                            %[1]v-<YYYYMMDD>-<hhmmss>-<username>.log
 
+    -v, --verbose      Increase the level of verbosity.
+                       It can be specified multiple times.
+                           -v     --> print INFO and banner messages
+                           -v -v  --> print INFO, banner and DEBUG messages
+                       You always want to use -v when running recipes.
+
     -V, --version      Print the program version and exit.
 
 EXAMPLES
@@ -281,27 +290,24 @@ EXAMPLES
     $ %[1]v help
 
     $ # Example 2: List all available recipes.
-    $ %[1]v -q --list
+    $ %[1]v --list
 
     $ # Example 3: Get help about a recipe.
     $ %[1]v help <recipe>
 
     $ # Example 4: Show your local configuration.
-    $ %[1]v
+    $ %[1]v -v
 
     $ # Example 5: Run a recipe with automatic logging.
     $ #            Provide a recipe specific option. The options
     $ #            are different for each recipe.
-    $ %[1]v -t <recipe> --foo bar
+    $ %[1]v -v -t <recipe> --foo bar
 
-    $ # Example 6: Create a shell script file.
-    $ %[1]v -s test.sh <recipe>
+    $ # Example 6: Run a local recipe file.
+    $ %[1]v -v ./myrecipe.ini
 
-    $ # Example 7: Run a local recipe file.
-    $ %[1]v ./myrecipe.ini
-
-    $ # Example 8: Use a local recipe repository.
-    $ %[1]v -r ~/my/recipes myrecipe1
+    $ # Example 7: Use a local recipe repository.
+    $ %[1]v -v -r ~/my/recipes myrecipe1
 
 `
 	// Get the built-in environment variables.

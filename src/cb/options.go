@@ -25,22 +25,35 @@ type CliOptions struct {
 	HelpArg     string
 	Flatten     string
 	Tee         bool
-	Quiet       bool
 	ShellScript string
 	Recipe      string
 	RecipeDir   string
 	ExtraArgs   []string
+
+	// Special case to allow users to disable banners
+	// in verbose mode.
+	Banner bool
+
+	// 0 - ERROR
+	// 1 - WARNING, ERROR
+	// 2 - INFO, WARNING, ERROR
+	// 3 - DEBUG, INFO, WARNING, ERROR
+	//
+	// -q == 0
+	// -v == 2
+	// -vv == 3
+	// neither -q or -v == 1
+	Verbose int
 }
 
 // NewCliOptions gets the command line options and figures out the
 // action to take.
 func NewCliOptions() (opts CliOptions) {
+	opts.Verbose = 1   // WARNING, ERROR
+	opts.Banner = true // print the banner of INFO messages are enabled
 	for i := 1; i < len(os.Args); i++ {
 		arg := os.Args[i]
 		switch arg {
-		case "-d", "--dryrun":
-			// Dry run.
-			opts.Dryrun = true
 		case "-h", "--help", "help":
 			// help can have an optional argument
 			// can't do it here because the optional
@@ -60,6 +73,8 @@ func NewCliOptions() (opts CliOptions) {
 			if opts.Action == actionUnknown {
 				opts.Action = actionList // do not override other actions
 			}
+		case "--no-banner":
+			opts.Banner = false // default is to print the banner.
 		case "-r", "--recipes":
 			d := cliGetNextArg(&i)
 			if IsDir(d) == false {
@@ -95,8 +110,11 @@ func NewCliOptions() (opts CliOptions) {
 			// tee the output to a unique file name
 			opts.Tee = true
 		case "-q", "--quiet":
-			// run quietly
-			opts.Quiet = true
+			opts.Verbose = 0 // default is 1
+		case "-v", "--verbose":
+			opts.Verbose++
+		case "-vv": // shorthand for -v -v
+			opts.Verbose += 2
 		case "-V", "--version":
 			base := path.Base(os.Args[0])
 			fmt.Printf("%v - v%v\n", base, Version)

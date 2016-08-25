@@ -1,3 +1,6 @@
+/*
+Do all of the recipe stuff.
+*/
 package main
 
 import (
@@ -104,6 +107,7 @@ func runRecipe(opts CliOptions) {
 		// Run the step.
 		var buf bytes.Buffer
 		stepStart := time.Now()
+		runRecipeStepBanner(opts, step, i+1, recipe)
 		switch step.Directive {
 		case stepCd:
 			Chdir(step.Data)
@@ -172,6 +176,37 @@ func runRecipe(opts CliOptions) {
 		runRecipeResetVariablesFromOutput(buf, &recipe)
 		Log.Info("step.end = %v %.03f", i+1, time.Since(stepStart).Seconds())
 	}
+}
+
+// runRecipeStepBanner displays the banner for each step.
+func runRecipeStepBanner(opts CliOptions, step RecipeStep, stepi int, recipe RecipeInfo) {
+	if opts.Banner == false || opts.Verbose < 2 {
+		return
+	}
+	p := 100. * (float64(stepi) / float64(len(recipe.Steps)))
+	Log.Printf("\n")
+	Log.Printf("# ================================================================\n")
+	Log.Printf("# Step %v of %v (%.02f%%%%)\n", stepi, len(recipe.Steps), p)
+	Log.Printf("# Recipe Name: %v\n", recipe.Name)
+	Log.Printf("# Recipe File: %v\n", recipe.File)
+	Log.Printf("#\n")
+
+	if strings.Contains(step.Data, "\n") {
+		lines := strings.Split(step.Data, "\n")
+		for i, line := range lines {
+			if i > 0 {
+				Log.Printf("# %v\n", line)
+			} else {
+				Log.Printf("# step = %v \"\"\"%v\n", step.DirectiveString, line)
+			}
+		}
+		Log.Printf("# \"\"\"\n")
+	} else {
+		q := strconv.Quote(step.Data)
+		Log.Printf("# step = %v %v\n", step.DirectiveString, q)
+	}
+	// TODO: add more context information here, the recipe details.
+	Log.Printf("# ================================================================\n")
 }
 
 // runRecipeResetVariablesFromOutput resets variables from the command
